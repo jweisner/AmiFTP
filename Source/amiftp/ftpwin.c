@@ -758,7 +758,7 @@ void RemoteCDFailed(void)
       quit_ftp();
     }
 
-void __stdargs ShowErrorReq(char *str,...)
+void ShowErrorReq(char *str,...)
 {
     va_list ap;
     static ULONG tags[]={

@@ -39,15 +39,24 @@
 #include	<dos/dos.h>
 #include	<dos/dosextens.h>
 
+#ifdef __GNUC__
+#include	<proto/exec.h>
+#include	<proto/dos.h>
+#else
 #include	<clib/exec_protos.h>
 #include	<clib/dos_protos.h>
 
 #include	<pragmas/exec_pragmas.h>
 #include	<pragmas/dos_pragmas.h>
+#endif
 
 #include	"wb2cli.h"
 
+#ifdef __GNUC__
+LONG WB2CLI(struct WBStartup *wbmsg __asm("a0"), ULONG DefaultStack __asm("d0"), struct DosLibrary *DOSBase __asm("a1"))
+#else
 LONG __asm WB2CLI(register __a0 struct WBStartup *wbmsg,register __d0 ULONG DefaultStack,register __a1 struct DosLibrary *DOSBase)
+#endif
 {
 struct	Process			*process;
 struct	CommandLineInterface	*cli;

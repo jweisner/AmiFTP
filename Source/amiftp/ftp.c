@@ -37,6 +37,8 @@
 #include "AmiFTP.h"
 #include "gui.h"
 
+extern struct Window *TransferWindow;
+
 unsigned char str_buf[2048];
 char *transfer_buf=0;
 int bufsize=0;
@@ -403,7 +405,6 @@ int sendrequest(char *cmd, char *local, char *remote)
     long ret,done;
     int error;
     extern Object *TransferWin_Object;
-    extern struct Window *TransferWindow;
     int timesent=0;
 
     flock=Lock(local,ACCESS_READ);

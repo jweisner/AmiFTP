@@ -6,16 +6,26 @@
 #include "gui.h"
 extern const char Version[];
 
+#ifdef __GNUC__
+#define REGA0
+#define REGA1
+#define REXX_FUNC static void
+#define REXX_PARAMS(ac, rexxmsg) \
+    struct ARexxCmd *ac __asm("a0"), struct RexxMsg *rexxmsg __asm("a1")
+#else
 #define REGA0 register __a0
 #define REGA1 register __a1
+#define REXX_FUNC static void __saveds __asm
+#define REXX_PARAMS(ac, rexxmsg) \
+    REGA0 struct ARexxCmd *ac, REGA1 struct RexxMsg *rexxmsg
+#endif
 
 struct SiteNode curr_rexx;
 
 BOOL ARexxQuitBit=FALSE;
 Object *ARexx_Object;
 
-static void __saveds __asm rexx_GetFile(REGA0 struct ARexxCmd *ac,
-					REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_GetFile(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long ascii;
@@ -52,8 +62,7 @@ static void __saveds __asm rexx_GetFile(REGA0 struct ARexxCmd *ac,
     }
 }
 
-static void __saveds __asm rexx_View(REGA0 struct ARexxCmd *ac,
-				     REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_View(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long ascii;
@@ -96,8 +105,7 @@ static void __saveds __asm rexx_View(REGA0 struct ARexxCmd *ac,
     }
 }
 
-static void __saveds __asm rexx_DeleteFile(REGA0 struct ARexxCmd *ac,
-					   REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_DeleteFile(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	char **files;
@@ -120,8 +128,7 @@ static void __saveds __asm rexx_DeleteFile(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_MGetFile(REGA0 struct ARexxCmd *ac,
-					 REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_MGetFile(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long ascii;
@@ -176,8 +183,7 @@ static void __saveds __asm rexx_MGetFile(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_Connect(REGA0 struct ARexxCmd *ac,
-					REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_Connect(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long noscan;
@@ -242,8 +248,7 @@ static void __saveds __asm rexx_Connect(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_Disconnect(REGA0 struct ARexxCmd *ac,
-					   REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_Disconnect(REXX_PARAMS(ac, rexxmsg))
 {
     if (!TCPStack) {
 	ac->ac_RC=RC_WARN;
@@ -256,8 +261,7 @@ static void __saveds __asm rexx_Disconnect(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_LCD(REGA0 struct ARexxCmd *ac,
-				    REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_LCD(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long parent;
@@ -272,8 +276,7 @@ static void __saveds __asm rexx_LCD(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_CD(REGA0 struct ARexxCmd *ac,
-				   REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_CD(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long noscan;
@@ -313,8 +316,7 @@ static void __saveds __asm rexx_CD(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_Site(REGA0 struct ARexxCmd *ac,
-				     REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_Site(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	char *name;
@@ -400,8 +402,7 @@ static void __saveds __asm rexx_Site(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_PutFile(REGA0 struct ARexxCmd *ac,
-					REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_PutFile(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long ascii;
@@ -444,8 +445,7 @@ static void __saveds __asm rexx_PutFile(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_MPutFile(REGA0 struct ARexxCmd *ac,
-					 REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_MPutFile(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	long ascii;
@@ -494,8 +494,7 @@ static void __saveds __asm rexx_MPutFile(REGA0 struct ARexxCmd *ac,
 
 BOOL SilentMode=FALSE;
 
-static void __saveds __asm rexx_SetAttr(REGA0 struct ARexxCmd *ac, 
-					REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_SetAttr(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	char *host;
@@ -558,8 +557,7 @@ static int SetStemVar(struct RexxMsg *rexxmsg, char *value, char *stemname,...)
 }
 
 
-static void __saveds __asm rexx_GetAttr(REGA0 struct ARexxCmd *ac, 
-					REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_GetAttr(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	char *stem;
@@ -650,16 +648,14 @@ static void __saveds __asm rexx_GetAttr(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_Quit(REGA0 struct ARexxCmd *ac,
-				     REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_Quit(REXX_PARAMS(ac, rexxmsg))
 {
     ARexxQuitBit=TRUE;
     ac->ac_RC=RC_OK;
     return;
 }
 
-static void __saveds __asm rexx_Activate(REGA0 struct ARexxCmd *ac,
-					 REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_Activate(REXX_PARAMS(ac, rexxmsg))
 {
     ac->ac_RC=RC_OK;
     if (!MainWindow)
@@ -667,8 +663,7 @@ static void __saveds __asm rexx_Activate(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_Deactivate(REGA0 struct ARexxCmd *ac,
-					   REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_Deactivate(REXX_PARAMS(ac, rexxmsg))
 {
     ac->ac_RC=RC_OK;
     if (RA_Iconify(MainWin_Object))
@@ -676,8 +671,7 @@ static void __saveds __asm rexx_Deactivate(REGA0 struct ARexxCmd *ac,
     return;
 }
 
-static void __saveds __asm rexx_FTPCommand(REGA0 struct ARexxCmd *ac,
-					   REGA1 struct RexxMsg *rexxmsg)
+REXX_FUNC rexx_FTPCommand(REXX_PARAMS(ac, rexxmsg))
 {
     struct ArgStruct {
 	char *command;

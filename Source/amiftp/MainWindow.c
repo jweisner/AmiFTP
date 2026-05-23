@@ -342,9 +342,15 @@ ULONG HandleMainWindowIDCMP(const BOOL AllowIconify)
 struct List dummy_list;
 static struct Hook MainIDCMPHook;
 
+#ifdef __GNUC__
+static ULONG MainIDCMPHookFunc(struct Hook *hook __asm("a0"),
+                               Object *WinObj    __asm("a2"),
+                               struct IntuiMessage *msg __asm("a1"))
+#else
 static ULONG __asm __saveds MainIDCMPHookFunc(register __a0 struct Hook *hook,
-					      register __a2 Object *WinObj,
-					      register __a1 struct IntuiMessage *msg)
+                                              register __a2 Object *WinObj,
+                                              register __a1 struct IntuiMessage *msg)
+#endif
 {
     switch (msg->Class) {
       case IDCMP_RAWKEY:
@@ -375,9 +381,15 @@ static ULONG __asm __saveds MainIDCMPHookFunc(register __a0 struct Hook *hook,
 }
 
 static struct Hook AppMessageHook;
+#ifdef __GNUC__
+static ULONG AppMessageHookFunc(struct Hook *hook   __asm("a0"),
+                                Object *WinObj      __asm("a2"),
+                                struct AppMessage *msg __asm("a1"))
+#else
 static ULONG __asm __saveds AppMessageHookFunc(register __a0 struct Hook *hook,
-					       register __a2 Object *WinObj,
-					       register __a1 struct AppMessage *msg)
+                                               register __a2 Object *WinObj,
+                                               register __a1 struct AppMessage *msg)
+#endif
 {
     int i;
     struct Node *node;
@@ -1016,15 +1028,15 @@ void UnlockWindow(Object *window_object)
 	menuitem=mmenu->FirstItem;
 	menuitem=mmenu->FirstItem;
 	
-	menuitem->Flags|=TransferMode==BINARY?CHECKED:NULL;
+	menuitem->Flags|=TransferMode==BINARY?CHECKED:0;
 	menuitem=menuitem->NextItem;
-	menuitem->Flags|=TransferMode==ASCII?CHECKED:NULL;
+	menuitem->Flags|=TransferMode==ASCII?CHECKED:0;
 
 	mmenu=mmenu->NextMenu; /* The sort menu */
 	menuitem=mmenu->FirstItem;
-	menuitem->Flags|=SortMode==SORTBYNAME?CHECKED:NULL;
+	menuitem->Flags|=SortMode==SORTBYNAME?CHECKED:0;
 	menuitem=menuitem->NextItem;
-	menuitem->Flags|=SortMode==SORTBYDATE?CHECKED:NULL;
+	menuitem->Flags|=SortMode==SORTBYDATE?CHECKED:0;
 
 	mmenu=mmenu->NextMenu; /* The settings menu */
 	menuitem=mmenu->FirstItem;
@@ -1032,13 +1044,13 @@ void UnlockWindow(Object *window_object)
 	menuitem=menuitem->NextItem;
 
 	menuitem=menuitem->NextItem;
-	menuitem->Flags|=LogWindow?CHECKED:NULL;
+	menuitem->Flags|=LogWindow?CHECKED:0;
 
 	menuitem=menuitem->NextItem;
-	menuitem->Flags|=MainPrefs.mp_Showdotfiles?CHECKED:NULL;
+	menuitem->Flags|=MainPrefs.mp_Showdotfiles?CHECKED:0;
 
 	menuitem=menuitem->NextItem;
-	menuitem->Flags|=MainPrefs.mp_ShowAllADTFiles?CHECKED:NULL;
+	menuitem->Flags|=MainPrefs.mp_ShowAllADTFiles?CHECKED:0;
 	if (MainWindow)
 	  ResetMenuStrip(MainWindow, menu);
 	else

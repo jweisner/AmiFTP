@@ -17,8 +17,14 @@ void ConvertFontName(char *dest, int *size, char *source);
 extern struct Screen *myScn;
 
 long __stack = 20480;
+#ifdef __GNUC__
+/* libnix provides __WBenchMsg (two underscores); alias to the name used throughout. */
+extern struct WBStartup *__WBenchMsg;
+#define _WBenchMsg __WBenchMsg
+#else
 extern struct WBStartup *_WBenchMsg;
 extern STRPTR _ProgramName;
+#endif
 
 char *ConfigName;
 char *AMIFTPPREFS="AmiFTP.prefs";
@@ -61,13 +67,15 @@ void PrintError(const STRPTR errmsg, ...)
 }
 
 /* uid_t/gid_t when not in pwd.h (netinclude). */
-#ifndef _UID_T_DEFINED
+#if !defined(_UID_T_DEFINED) && !defined(_UID_T_DECLARED)
 typedef unsigned long uid_t;
 #define _UID_T_DEFINED
+#define _UID_T_DECLARED
 #endif
-#ifndef _GID_T_DEFINED
+#if !defined(_GID_T_DEFINED) && !defined(_GID_T_DECLARED)
 typedef unsigned long gid_t;
 #define _GID_T_DEFINED
+#define _GID_T_DECLARED
 #endif
 
 /* AS225 struct kept for type cast when using tcp_getpwnam (usergroup returns struct passwd). */

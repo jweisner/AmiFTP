@@ -24,7 +24,9 @@
 #include <proto/diskfont.h>
 
 #include <string.h>
+#ifndef __GNUC__
 #include <dos.h>
+#endif
 #include <math.h>
 
 #include <proto/window.h>
@@ -75,6 +77,10 @@
 #include <libraries/gadtools.h>
 #include <reaction/reaction.h>
 #include <reaction/reaction_macros.h>
+
+#ifdef __GNUC__
+#include "reaction_compat.h"
+#endif
 
 /* Missing Reaction defines that are not in the NDK */
 

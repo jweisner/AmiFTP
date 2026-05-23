@@ -134,4 +134,8 @@
 #include	<dos/dosextens.h>
 #include	<workbench/startup.h>
 
+#ifdef __GNUC__
+LONG WB2CLI(struct WBStartup * __asm("a0"), ULONG __asm("d0"), struct DosLibrary * __asm("a1"));
+#else
 LONG __asm WB2CLI(register __a0 struct WBStartup *,register __d0 ULONG,register __a1 struct DosLibrary *);
+#endif

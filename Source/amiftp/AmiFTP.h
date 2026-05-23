@@ -30,8 +30,10 @@ extern struct Library *SocketBase;
 #include <stdarg.h>
 #include <time.h>
 
+#ifndef __GNUC__
 #include <dos.h>
 #include <ios1.h>
+#endif
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <rexx/storage.h>
@@ -83,7 +85,11 @@ extern struct Library *SocketBase;
 
 #include <wb2cli.h>
 
-#include "/tcphook/tcphooks.h"
+#include "tcphooks.h"
+
+#ifdef __GNUC__
+#include "gcc_compat.h"
+#endif
 
 /* Exec list accessors (NDK exec/lists.h has IsListEmpty only; provide these). */
 #ifndef GetHead
@@ -517,7 +523,7 @@ int View_clicked(BOOL Readme);
 int Site_clicked(void);
 int Dir_clicked(void);
 void RemoteCDFailed(void);
-void __stdargs ShowErrorReq(char *str,...);
+void ShowErrorReq(char *str,...);
 char *GetPassword(char *user,char *passbuf);
 int About(void);
 int SavePrefs(void);

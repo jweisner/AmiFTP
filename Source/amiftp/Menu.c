@@ -271,18 +271,18 @@ int BuildMenu(void)
     if (NewMenu = (struct NewMenu *)AllocVec((Count + SiteCount) * sizeof(struct NewMenu),MEMF_ANY|MEMF_CLEAR)) {
 	extern BPTR LogWindow;
 	mainmenus[MNU_BinaryTransferMode].nm_Flags=
-	  CHECKIT|(TransferMode==BINARY?CHECKED:NULL);
+	  CHECKIT|(TransferMode==BINARY?CHECKED:0);
 	mainmenus[MNU_AsciiTransferMode].nm_Flags=
-	  CHECKIT|(TransferMode==ASCII?CHECKED:NULL);
+	  CHECKIT|(TransferMode==ASCII?CHECKED:0);
 	mainmenus[MNU_SortByName].nm_Flags=
-	  CHECKIT|(SortMode==SORTBYNAME?CHECKED:NULL);
-	mainmenus[MNU_SortByDate].nm_Flags=CHECKIT|(SortMode==SORTBYDATE?CHECKED:NULL);
+	  CHECKIT|(SortMode==SORTBYNAME?CHECKED:0);
+	mainmenus[MNU_SortByDate].nm_Flags=CHECKIT|(SortMode==SORTBYDATE?CHECKED:0);
 	mainmenus[MNU_LogWindow].nm_Flags=
-	  CHECKIT|MENUTOGGLE|(LogWindow?CHECKED:NULL);
+	  CHECKIT|MENUTOGGLE|(LogWindow?CHECKED:0);
 	mainmenus[MNU_ToggleDotFiles].nm_Flags=
-	  CHECKIT|MENUTOGGLE|(MainPrefs.mp_Showdotfiles?CHECKED:NULL);
+	  CHECKIT|MENUTOGGLE|(MainPrefs.mp_Showdotfiles?CHECKED:0);
 	mainmenus[MNU_ToggleADT].nm_Flags=
-	  CHECKIT|MENUTOGGLE|(MainPrefs.mp_ShowAllADTFiles?CHECKED:NULL);
+	  CHECKIT|MENUTOGGLE|(MainPrefs.mp_ShowAllADTFiles?CHECKED:0);
 
 	CopyMem(mainmenus, NewMenu, Count * sizeof(struct NewMenu));
 	if (SiteCount) {

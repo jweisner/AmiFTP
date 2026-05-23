@@ -4,6 +4,14 @@
  * Compile with IDIR pointing at SANA+RoadshowTCP-IP/netinclude.
  */
 #include <proto/bsdsocket.h>
+
+/* Both NDK and libnix supply inline/usergroup.h but share the guard _INLINE_USERGROUP_H.
+ * The libnix version omits the plain-name aliases (getlogin, getpwnam, endpwent) that
+ * the NDK version provides, and hard-codes USERGROUP_BASE_NAME as lss->lx_UserGroupBase.
+ * Work around both issues: define the base name to block the libnix expansion, then
+ * include the NDK inline directly by path before proto/usergroup.h does it indirectly. */
+#define USERGROUP_BASE_NAME UserGroupBase
+#include "/opt/amiga/m68k-amigaos/ndk-include/inline/usergroup.h"
 #include <proto/usergroup.h>
 
 #include <utility/tagitem.h>
@@ -174,13 +182,20 @@ int SetupAmiTCPHooks()
     tcp_getservbyname=amitcp_getservbyname;
 
     if (UserGroupBase) {
+	struct TagItem ug_tags[4];
+	int ug_n = 0;
 	tcp_endpwent=amitcp_endpwent;
 	tcp_getpwnam=amitcp_getpwnam;
 	tcp_getlogin=amitcp_getlogin;
-	if (ug_SetupContextTags(_ProgramName,
-				UGT_INTRMASK, SIGBREAKB_CTRL_C,
-				UGT_ERRNOPTR(sizeof(errno)), &errno,
-				TAG_END)!= 0)
+	ug_tags[ug_n].ti_Tag  = UGT_INTRMASK;
+	ug_tags[ug_n].ti_Data = (ULONG)SIGBREAKB_CTRL_C;
+	ug_n++;
+	ug_tags[ug_n].ti_Tag  = UGT_ERRNOPTR(sizeof(errno));
+	ug_tags[ug_n].ti_Data = (ULONG)&errno;
+	ug_n++;
+	ug_tags[ug_n].ti_Tag  = TAG_END;
+	ug_tags[ug_n].ti_Data = 0;
+	if (ug_SetupContextTagList(_ProgramName, ug_tags) != 0)
 	    return 0;
     } else {
 	struct TagItem ctx_tags[4];

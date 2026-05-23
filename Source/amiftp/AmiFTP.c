@@ -8,6 +8,7 @@
 extern char *connected_host;
 extern struct MsgPort *AppPort;
 extern struct CLIArguments *cliargs;
+extern char *ConfigName;
 
 struct ReqToolsBase *ReqToolsBase = NULL;
 
@@ -762,7 +763,7 @@ void RemoteCDFailed(void)
       quit_ftp();
     }
 
-void __stdargs ShowErrorReq(char *str,...)
+void ShowErrorReq(char *str,...)
 {
     va_list ap;
     static ULONG tags[]={
@@ -923,8 +924,6 @@ int About(void)
 
 int SavePrefs(void)
 {
-    extern char *ConfigName;
-
     if (ConfigChanged || CurrentState.LeftEdge!=MainWindow->LeftEdge || CurrentState.TopEdge!=MainWindow->TopEdge) {
 	LockWindow(MainWin_Object);
 	MainPrefs.mp_Height=MainWindow->Height-MainWindow->BorderTop-MainWindow->BorderBottom;

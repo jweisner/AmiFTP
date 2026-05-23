@@ -18,5 +18,10 @@ src/bin/*
 # Ignore object files
 *.o
 
+# Ignore GCC cross-compile build outputs
+Source/amiftp/AmiFTP
+Source/amiftp/AmiFTP_d
+Source/tcphook/tcp.a
+
 output.txt
 *.map

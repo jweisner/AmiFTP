@@ -6,9 +6,10 @@
 #define __DIRLIST_STRUCT_H__
 
 #include <stddef.h>
-#ifndef _MODE_T_DEFINED
+#if !defined(_MODE_T_DEFINED) && !defined(_MODE_T_DECLARED)
 typedef unsigned long mode_t;
 #define _MODE_T_DEFINED
+#define _MODE_T_DECLARED
 #endif
 
 #define	DATELEN 20

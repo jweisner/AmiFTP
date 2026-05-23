@@ -70,9 +70,15 @@ int NewClicked(void);
 
 static ULONG lsecs,lmics;
 
+#ifdef __GNUC__
+ULONG PasswordHook(struct Hook *Hook      __asm("a0"),
+                   struct SGWork *Work    __asm("a2"),
+                   ULONG *Msg            __asm("a1"))
+#else
 ULONG __asm __saveds
 PasswordHook(register __a0 struct Hook *Hook, register __a2 struct SGWork *Work,
-	     register __a1 ULONG *Msg)
+             register __a1 ULONG *Msg)
+#endif
 {
 //    ObjectNode *Node;
 
