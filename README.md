@@ -46,6 +46,32 @@ This project brings AmiFTP up to date so it builds against the NDK 3.2 and can c
 - **AmigaOS 3.2** with ReAction, or possibly older versions with ClassAct.
 - **TCP/IP stack** providing **bsdsocket.library** only, no more AS225 socket.library support
 
+## Building
+
+### SAS/C (classic Amiga toolchain)
+
+Follow the amigazen ToolKit setup instructions. Build with `smake` from `Source/amiftp/`.
+
+### bebbo/amiga-gcc (cross-compiler, Linux/macOS host)
+
+AmiFTP builds with the [bebbo/amiga-gcc](https://github.com/bebbo/amiga-gcc) m68k-amigaos cross-compiler. A ready-to-use container image is available.
+
+Dependencies built automatically by the GNUmakefile:
+
+- [reaction.lib_sasc](https://github.com/amigazen/reaction.lib_sasc) — ReAction link library
+- [rtasl.lib](https://github.com/amigazen/rtasl.lib) — reqtools/ASL link library
+
+```sh
+podman run --rm \
+  -v /path/to/AmiFTP:/work \
+  -v /path/to/reaction.lib_sasc:/reaction \
+  -v /path/to/rtasl.lib:/rtasl \
+  ghcr.io/amigazen/amiga-buildenv:latest \
+  make -C /work/Source/amiftp -f GNUmakefile
+```
+
+The resulting binary is a standard HUNK-format executable compatible with AmigaOS 3.2.
+
 ## Version History
 
 ### Version 2

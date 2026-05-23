@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Legacy AmiFTP versions use major.revision numbering (e.g. 1.11 > 1.1, 1.201 > 1.20).
 
+## [AmiFTP 2 alpha 2] - 2026-05-23
+
+### Added
+- Build: GNUmakefile for bebbo/amiga-gcc cross-compiler. AmiFTP now builds from a Linux or macOS host without requiring SAS/C. Produces a HUNK-format binary compatible with AmigaOS 3.2.
+- Compatibility: `gcc_compat.c` provides SAS/C-specific runtime functions (`strmfp`, `stcgfn`, `geta4`, `getfa`, `getdfs`, `_ProgramName`, `__WBenchMsg`) and defines `ARexxBase = NULL` to prevent the libstubs OS 3.5-era arexx.library opener from linking in.
+- Compatibility: `inc/reaction_compat.h` re-provides varargs gadget node allocation macros (`AllocListBrowserNode`, `AllocChooserNode`, etc.) disabled by the `-DNO_INLINE_STDARG` flag required for GCC builds.
+
+### Fixed
+- bsdsocket.library: Removed `setsockopt(SO_OOBINLINE)` and `setsockopt(SO_KEEPALIVE)` from `ftp_hookup()` and `dataconn()`. On OS 3.2 bsdsocket (Roadshow), both options block indefinitely instead of returning an error.
+- bsdsocket.library: `try_pasv()` now uses a non-blocking connect with a WaitSelect loop, matching the approach already used in `ftp_hookup()`. On OS 3.2 bsdsocket, `tcp_connect()` always returns EINPROGRESS immediately even on fast connections.
+- bsdsocket.library: `sgetc()` WaitSelect call now includes at least one Intuition window signal alongside `SIGBREAKF_CTRL_C`. On OS 3.2 bsdsocket, WaitSelect ignores the timeval timeout when the signal mask contains only `SIGBREAKF_CTRL_C`, causing an indefinite stall.
+- bsdsocket.library: `sgetc()` passes `nfds=32` to WaitSelect rather than `sock+1`, matching the `empty()` helper and avoiding stalls with low socket descriptor values.
+- MainWindow: added NULL guard after `LockPubScreen` fallback to avoid crash when no screen is available.
+
 ## [AmiFTP 2 alpha 1] - 2026-04-06
 
 ### Added
