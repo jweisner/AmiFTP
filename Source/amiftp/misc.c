@@ -96,6 +96,7 @@ int sgetc(const int sock)
     int maxloops;
     extern Object *ConnectWin_Object;
     extern Object *TransferWin_Object;
+    extern Object *MainWin_Object;
 
     /* Return next byte from buffer if we have one (same socket). */
     if (sock == sgetc_sock && sgetc_idx < sgetc_len)
@@ -107,9 +108,9 @@ int sgetc(const int sock)
     sgetc_len = 0;
 
     /*
-     * Do not wait on main window signal: ConnectSite() holds LockWindow(MainWin_Object),
-     * so HandleMainWindowIDCMP() would try to lock it again and deadlock.
-     * Only wait on Connect window (Abort), AmigaGuide, and Ctrl-C.
+     * Include all open window signals so WaitSelect has a non-empty signal mask.
+     * Do NOT call HandleMainWindowIDCMP when its signal fires — LockWindow may be
+     * held by the caller. Just let those signals fall through and loop again.
      */
     winmask = 0;
     transmask = 0;
@@ -117,6 +118,14 @@ int sgetc(const int sock)
 	GetAttr(WINDOW_SigMask, ConnectWin_Object, &winmask);
     if (TransferWin_Object)
 	GetAttr(WINDOW_SigMask, TransferWin_Object, &transmask);
+    /* Always include the main window signal so WaitSelect doesn't get a near-empty
+     * mask — some bsdsocket WaitSelect implementations stall with minimal signal sets. */
+    {
+	ULONG mainmask = 0;
+	if (MainWin_Object)
+	    GetAttr(WINDOW_SigMask, MainWin_Object, &mainmask);
+	transmask |= mainmask;
+    }
 
     loops = 0;
     maxloops = 120; /* 120 * 1s = 120s total */
@@ -133,7 +142,7 @@ int sgetc(const int sock)
 
 	if (DEBUG && (loops == 0 || (loops % 10) == 0))
 	    DebugLog("sgetc: waitselect loop=%d nfds=%d\n", loops, sock + 1);
-	res = tcp_waitselect(sock + 1, &rd, 0L, &ex, &t, &mask);
+	res = tcp_waitselect(32, &rd, 0L, &ex, &t, &mask);
 	if (DEBUG)
 	    DebugLog("sgetc: waitselect returned res=%ld mask=0x%lx rd=%d ex=%d\n",
 		(long)res, (unsigned long)mask,

@@ -465,6 +465,8 @@ struct Window *OpenFTPWindow(const BOOL StartIconified)
 	  free(MainPrefs.mp_PubScreen);
 	MainPrefs.mp_PubScreen=strdup(pubname);*/
     }
+    if (!Screen)
+	return NULL;
     ScreenFont=OpenFont(Screen->Font);
 
     AmiFTPAttr.ta_Name=Screen->Font->ta_Name;

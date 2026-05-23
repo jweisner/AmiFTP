@@ -222,25 +222,6 @@ int ftp_hookup(char *host, short port)
 	rval=CONN_ERROR;
 	goto bad;
     }
-#ifdef SO_OOBINLINE
-    {
-	int on = 1;
-
-if (tcp_setsockopt(s, SOL_SOCKET, SO_OOBINLINE, (char *)&on,
-		   sizeof (on)) < 0) {
-//	    perror("AmiFTP: setsockopt");
-	}
-    }
-#endif				/* SO_OOBINLINE */
-    {
-	int on = 1;
-
-	if (tcp_setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (char *)&on,
-			   sizeof (on)) < 0) {
-	    //	    perror("AmiFTP: setsockopt");
-	}
-    }
-
     return CONN_OK;
   bad:
     tcp_closesocket(s);
@@ -992,8 +973,58 @@ static int try_pasv(void)
     pasv_addr.sin_port = htons(port);
     pasv_addr.sin_addr.s_addr = htonl((unsigned long)(((unsigned long)h1 << 24) |
 	    ((unsigned long)h2 << 16) | ((unsigned long)h3 << 8) | (unsigned long)h4));
+    {
+	long on = 1;
+	tcp_ioctl(data, TCPFIONBIO, (char *)&on);
+    }
+    errno = EINPROGRESS;
     res = tcp_connect(data, &pasv_addr);
-    if (res < 0) {
+    if (DEBUG) DebugLog("try_pasv: tcp_connect returned %ld errno=%ld\n", (long)res, (long)errno);
+    while (res == -1 && errno == EINPROGRESS) {
+	fd_set ws, es;
+	struct timeval tv;
+	ULONG mask = AG_Signal | SIGBREAKF_CTRL_C;
+	ULONG cwmask = 0;
+	extern Object *ConnectWin_Object;
+	if (ConnectWin_Object)
+	    GetAttr(WINDOW_SigMask, ConnectWin_Object, &cwmask);
+	mask |= cwmask;
+	FD_ZERO(&ws);
+	FD_SET(data, &ws);
+	FD_ZERO(&es);
+	FD_SET(data, &es);
+	tv.tv_sec = 30L;
+	tv.tv_usec = 0;
+	res = tcp_waitselect(data + 1, NULL, &ws, &es, &tv, &mask);
+	if (DEBUG) DebugLog("try_pasv: waitselect res=%ld mask=0x%lx\n", (long)res, (unsigned long)mask);
+	if (mask & SIGBREAKF_CTRL_C) {
+	    tcp_closesocket(data);
+	    data = -1;
+	    return -1;
+	}
+	if (mask & AG_Signal)
+	    HandleAmigaGuide();
+	if (cwmask && (mask & cwmask))
+	    HandleConnectIDCMP();
+	if (res > 0) {
+	    struct sockaddr_in in;
+	    int len = sizeof(in);
+	    long off = 0;
+	    tcp_ioctl(data, TCPFIONBIO, (char *)&off);
+	    if (tcp_getpeername(data, (struct sockaddr *)&in, (LONG *)&len) == 0)
+		break;
+	    if (DEBUG) DebugLog("try_pasv: getpeername failed, connection refused\n");
+	    tcp_closesocket(data);
+	    data = -1;
+	    return -1;
+	}
+	/* timeout or exception */
+	if (DEBUG) DebugLog("try_pasv: waitselect timeout/exception\n");
+	tcp_closesocket(data);
+	data = -1;
+	return -1;
+    }
+    if (res < 0 && errno != EINPROGRESS) {
 	if (DEBUG) DebugLog("try_pasv: tcp_connect failed (res=%ld errno=%ld)\n", (long)res, (long)errno);
 	tcp_closesocket(data);
 	data = -1;
@@ -1085,9 +1116,6 @@ int dataconn(void)
     if (DEBUG) DebugLog("dataconn: entry pasv_data_ready=%d data=%d\n", pasv_data_ready, data);
     if (pasv_data_ready) {
 	pasv_data_ready = 0;
-	if (tcp_setsockopt(data, SOL_SOCKET, SO_OOBINLINE, (char *)&on, sizeof(on)) < 0) {
-	    /* ignore */
-	}
 	if (DEBUG) DebugLog("dataconn: PASV path return data=%d\n", data);
 	return data;
     }
@@ -1146,9 +1174,6 @@ int dataconn(void)
 	    }
 	    tcp_closesocket(data);
 	    data = s;
-	    if (tcp_setsockopt(data, SOL_SOCKET, SO_OOBINLINE, (char *)&on, sizeof(on)) < 0) {
-		/* ignore */
-	    }
 	    return data;
 	}
 
