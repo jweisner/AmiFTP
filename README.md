@@ -66,7 +66,7 @@ podman run --rm \
   -v /path/to/AmiFTP:/work \
   -v /path/to/reaction.lib_sasc:/reaction \
   -v /path/to/rtasl.lib:/rtasl \
-  ghcr.io/amigazen/amiga-buildenv:latest \
+  ghcr.io/jweisner/amiga-buildenv:main \
   make -C /work/Source/amiftp -f GNUmakefile
 ```
 
