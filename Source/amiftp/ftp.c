@@ -46,6 +46,30 @@ int bufsize=0;
 /* When set, data socket is already connected (PASV); dataconn() returns it without accept. */
 static int pasv_data_ready = 0;
 
+/*
+ * OS 3.2 bsdsocket.library (Roadshow) quirks — discovered during runtime testing on OS 3.2.3.
+ * These differ from standard BSD sockets and from AmiTCP/OS 3.5 bsdsocket behavior.
+ *
+ * 1. setsockopt(SO_OOBINLINE) and setsockopt(SO_KEEPALIVE) block forever.
+ *    Both options hang indefinitely instead of returning an error.  All call
+ *    sites for these options have been removed from ftp_hookup() and dataconn().
+ *
+ * 2. tcp_connect() always returns -1/EINPROGRESS, even on fast local connections.
+ *    Every connect site must set the socket non-blocking before calling connect,
+ *    then use a WaitSelect loop on the write-fd set, and confirm with getpeername()
+ *    before treating the connection as established.
+ *
+ * 3. tcp_waitselect() stalls with a minimal signal mask.
+ *    Passing only SIGBREAKF_CTRL_C (0x1000) causes WaitSelect to block despite
+ *    a non-zero timeval.  At least one real Intuition window signal must be in
+ *    the mask for the timeout to fire.  Include WINDOW_SigMask from at least
+ *    one open window alongside any socket signals.
+ *
+ * 4. Use nfds=32 rather than sock+1.
+ *    Passing sock+1 as nfds can cause stalls when the socket fd is low (e.g. 1).
+ *    Use 32 as the fixed upper bound, matching the empty() helper.
+ */
+
 int ftp_hookup(char *host, short port)
 {
     register struct hostent *hp = 0;
