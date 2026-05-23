@@ -16,11 +16,13 @@ void ConvertFontName(char *dest, int *size, char *source);
 
 extern struct Screen *myScn;
 
-long __stack = 20480;
+long __stack = 65536;
 #ifdef __GNUC__
 /* libnix provides __WBenchMsg (two underscores); alias to the name used throughout. */
 extern struct WBStartup *__WBenchMsg;
 #define _WBenchMsg __WBenchMsg
+extern void INIT_3_ReActionLibs(void);
+extern void EXIT_3_ReActionLibs(void);
 #else
 extern struct WBStartup *_WBenchMsg;
 extern STRPTR _ProgramName;
@@ -99,6 +101,12 @@ int main(int argc, char **argv)
     struct servent *servent;
     APTR oldwptr;
 
+#ifdef __GNUC__
+    Write(Output(), "main() entered\n", 15);
+    INIT_3_ReActionLibs();
+    Write(Output(), "INIT_3 done\n", 12);
+#endif
+
     if (!ButtonBase)
       return 10;
 
@@ -108,10 +116,20 @@ int main(int argc, char **argv)
     if (!DOSBase)
       return 10;
 
+#ifdef __GNUC__
+    Write(Output(), "bases ok\n", 9);
+#endif
+
     ME=(struct Process *)FindTask(NULL);
     oldwptr=ME->pr_WindowPtr;
 
+#ifdef __GNUC__
+    Write(Output(), "calling MyOpenLibs\n", 19);
+#endif
     MyOpenLibs();
+#ifdef __GNUC__
+    Write(Output(), "MyOpenLibs done\n", 16);
+#endif
 
     ag.ag_NAG.nag_BaseName="AmiFTP";
     ag.ag_NAG.nag_Name="AmiFTP.guide";
@@ -156,10 +174,16 @@ int main(int argc, char **argv)
 	strcpy(CurrentState.RexxPort, "AMIFTP");
     }
 
+#ifdef __GNUC__
+    Write(Output(), "calling InitRexx\n", 17);
+#endif
     if (!InitRexx()) {
 	CleanUp();
 	exit(10);
     }
+#ifdef __GNUC__
+    Write(Output(), "InitRexx done\n", 14);
+#endif
 
     /* This has to be here, can't put this in MyOpenLibs() */
     /* AS225/MLINK fallback removed; only bsdsocket.library is used. */
@@ -549,6 +573,10 @@ void CleanUp()
 
     if (IconBase)
       CloseLibrary((struct Library *)IconBase);
+
+#ifdef __GNUC__
+    EXIT_3_ReActionLibs();
+#endif
 }
 
 void PrintSiteList()

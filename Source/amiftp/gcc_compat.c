@@ -13,7 +13,13 @@
 #include <workbench/startup.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/arexx.h>
 #include <string.h>
+
+/* ARexxBase: strong definition so libstubs.a(arexx.o) is not pulled in.
+ * libstubs tries to open "arexx.library" (OS3.5 name); on OS3.2 it's
+ * "arexx.class". INIT_3_ReActionLibs() opens the correct name. */
+struct Library *ARexxBase = NULL;
 
 /* __WBenchMsg: libnix provides this as a common symbol in ncrt0.o, but linking
  * against it as 'extern' from another TU fails because common symbols don't satisfy
